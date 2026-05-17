@@ -10,7 +10,6 @@ extends Area2D
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var lifetime_timer: Timer = $LifetimeTimer
 
-const TEX_FLY: Texture2D = preload("res://art/mosquitos/common/fly/south.png")
 const BLOOD_PUDDLE_SCRIPT: Script = preload("res://scripts/blood_puddle.gd")
 
 var velocity: Vector2 = Vector2.ZERO
@@ -75,7 +74,7 @@ func _die() -> void:
 	alive = false
 	velocity = Vector2.ZERO
 	_spawn_blood_puddle()
-	sprite.modulate = Color(0.08, 0.08, 0.08, 0.9)
+	sprite.modulate = Color(0.45, 0.45, 0.45, 0.75)
 	sprite.scale *= 0.9
 	lifetime_timer.stop()
 	GameState.add_kill()
