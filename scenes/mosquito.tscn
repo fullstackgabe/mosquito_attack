@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3 uid="uid://b1m0sq1tcommon"]
+
+[ext_resource type="Script" path="res://scripts/mosquito.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://art/mosquitos/common/fly/south.png" id="2_south"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hit"]
+radius = 60.0
+
+[node name="Mosquito" type="Area2D"]
+script = ExtResource("1_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_south")
+scale = Vector2(1.5, 1.5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_hit")
+
+[node name="LifetimeTimer" type="Timer" parent="."]
+one_shot = true
