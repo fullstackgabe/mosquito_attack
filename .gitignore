@@ -1,6 +1,17 @@
-# Godot 4+ specific ignores
+# Godot 4+
 .godot/
 /android/
+export_presets.cfg
+*.translation
 
-# Claude Code
+# Claude Code (documentação local, não versionar)
+CLAUDE.md
 .claude/
+
+# macOS / Windows
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Downloads do PixelLab
+*.zip
