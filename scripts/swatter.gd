@@ -10,6 +10,9 @@ extends Node2D
 var _tween: Tween = null
 
 func _ready() -> void:
+	var weapon := Weapons.get_def(SaveData.equipped)
+	if weapon.texture != "" and ResourceLoader.exists(weapon.texture):
+		sprite.texture = load(weapon.texture)
 	sprite.scale = Vector2(idle_scale, idle_scale)
 	set_process(true)
 
@@ -23,7 +26,24 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventScreenTouch and event.pressed:
 		pressed = true
 	if pressed:
+		global_position = event.position
+		_hit_mosquitos()
 		_play_smack()
+
+## Mata todo mosquito cujo corpo esteja debaixo da sola desenhada do chinelo.
+## Usa a escala de repouso (o que o jogador vê ao mirar), não a da animação.
+func _hit_mosquitos() -> void:
+	for m in get_tree().get_nodes_in_group("mosquitos"):
+		if not m.alive:
+			continue
+		for p in m.hit_points():
+			if _sole_covers(p):
+				m.squash()
+				break
+
+func _sole_covers(global_point: Vector2) -> bool:
+	var local := (global_point - sprite.global_position) / idle_scale
+	return sprite.is_pixel_opaque(local)
 
 func _play_smack() -> void:
 	if _tween and _tween.is_valid():

@@ -16,6 +16,15 @@ var velocity: Vector2 = Vector2.ZERO
 var alive: bool = true
 var arena_rect: Rect2
 
+## “Zumbido” provisório até ter a animação de asa do PixelLab:
+## o sprite treme rápido para cima e para baixo.
+const BUZZ_FREQ := 38.0
+const BUZZ_AMP  := 3.0
+
+## Raio do corpo (px de tela) que conta como acerto.
+const HIT_RADIUS := 28.0
+var _buzz_t: float = randf() * TAU
+
 func _ready() -> void:
 	var angle := randf() * TAU
 	var speed := randf_range(speed_min, speed_max)
@@ -26,7 +35,7 @@ func _ready() -> void:
 	lifetime_timer.timeout.connect(_on_lifetime_expired)
 	lifetime_timer.start()
 
-	input_event.connect(_on_input_event)
+	add_to_group("mosquitos")
 	_update_facing()
 
 func setup(arena: Rect2) -> void:
@@ -38,6 +47,8 @@ func _physics_process(delta: float) -> void:
 	position += velocity * delta
 	_bounce_off_walls()
 	_update_facing()
+	_buzz_t += delta * BUZZ_FREQ
+	sprite.position.y = sin(_buzz_t) * BUZZ_AMP
 
 func _bounce_off_walls() -> void:
 	if arena_rect.size == Vector2.ZERO:
@@ -59,15 +70,17 @@ func _update_facing() -> void:
 	if velocity.x != 0.0:
 		sprite.flip_h = velocity.x > 0.0
 
-func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
-	if not alive:
-		return
-	var pressed := false
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		pressed = true
-	elif event is InputEventScreenTouch and event.pressed:
-		pressed = true
-	if pressed:
+## Pontos (globais) do corpo do mosquito usados pelo swatter para testar o acerto:
+## o centro + um anel de raio HIT_RADIUS (corpo, sem a ponta das patas/asas).
+func hit_points() -> PackedVector2Array:
+	var pts := PackedVector2Array([global_position])
+	for i in 8:
+		pts.append(global_position + Vector2.RIGHT.rotated(TAU * i / 8.0) * HIT_RADIUS)
+	return pts
+
+## Chamado pelo swatter quando a sola acerta o mosquito.
+func squash() -> void:
+	if alive:
 		_die()
 
 func _die() -> void:
@@ -78,6 +91,7 @@ func _die() -> void:
 	sprite.scale *= 0.9
 	lifetime_timer.stop()
 	GameState.add_kill()
+	SaveData.add_coins(1)
 	await get_tree().create_timer(squish_duration).timeout
 	queue_free()
 

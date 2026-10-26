@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="mosquito_attack"
-run/main_scene="res://main.tscn"
+run/main_scene="res://scenes/title.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
@@ -19,13 +19,13 @@ config/icon="res://icon.svg"
 
 GameState="*res://autoload/game_state.gd"
 MosquitoSpawner="*res://autoload/mosquito_spawner.gd"
+SaveData="*res://autoload/save_data.gd"
 
 [display]
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
 
 [importer_defaults]
 
