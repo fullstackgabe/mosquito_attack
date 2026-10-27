@@ -3,11 +3,15 @@ extends Control
 ## Escolha de arma / loja. O chinelo vem de graça; as outras são compradas
 ## com moedas (1 por mosquito). Armas `locked` aparecem como “Em breve”.
 
-const CARD_SIZE := Vector2(320, 470)
-const CARD_GAP  := 30.0
+## Grade de cartas: até GRID_COLS por linha, com a mesma quantidade em cada linha
+## (14 armas = 2 linhas de 7, cabe sem rolagem).
+const CARD_SIZE := Vector2(220, 300)
+const CARD_GAP  := 16.0
+const GRID_COLS := 8
+const GRID_TOP  := 215.0
 
 var _coins_label: Label
-var _row: HBoxContainer   # cards recriados a cada _refresh()
+var _row: GridContainer   # cards recriados a cada _refresh()
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -23,8 +27,9 @@ func _ready() -> void:
 
 	add_child(_build_coins_badge())
 
-	_row = HBoxContainer.new()
-	_row.add_theme_constant_override("separation", int(CARD_GAP))
+	_row = GridContainer.new()
+	_row.add_theme_constant_override("h_separation", int(CARD_GAP))
+	_row.add_theme_constant_override("v_separation", int(CARD_GAP))
 	add_child(_row)
 
 	_build_bottom_buttons()
@@ -45,8 +50,11 @@ func _refresh() -> void:
 	for w in Weapons.DEFS:
 		_row.add_child(_build_card(w))
 	var n := Weapons.DEFS.size()
-	var total_w := n * CARD_SIZE.x + (n - 1) * CARD_GAP
-	_row.position = Vector2((1920 - total_w) / 2.0, 220)
+	var rows := ceili(float(n) / GRID_COLS)
+	var cols := ceili(float(n) / rows)
+	_row.columns = cols
+	var total_w := cols * CARD_SIZE.x + (cols - 1) * CARD_GAP
+	_row.position = Vector2((1920 - total_w) / 2.0, GRID_TOP)
 	_coins_label.text = "Moedas: %d" % SaveData.coins
 
 func _build_card(w: Dictionary) -> Control:
@@ -58,23 +66,33 @@ func _build_card(w: Dictionary) -> Control:
 	card.custom_minimum_size = CARD_SIZE
 	card.add_theme_stylebox_override("panel", Styles.bordered(Styles.PANEL, border, 14, 5 if equipped else 3))
 
+	## Faixas de altura fixa (ícone, nome, descrição) e botão colado embaixo: tudo fica
+	## na mesma posição em todas as cartas, seja qual for o tamanho do texto.
 	var vbox := VBoxContainer.new()
-	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	vbox.add_theme_constant_override("separation", 14)
+	vbox.alignment = BoxContainer.ALIGNMENT_BEGIN
+	vbox.add_theme_constant_override("separation", 8)
 	card.add_child(vbox)
 
 	vbox.add_child(_build_icon(w))
 
-	var name_lbl := _label(w.name, 34, Styles.MUTED if w.locked else Styles.CREAM)
+	var name_lbl := _label(w.name, 22, Styles.MUTED if w.locked else Styles.CREAM)
+	name_lbl.custom_minimum_size = Vector2(0, 30)
+	name_lbl.clip_text = true
 	vbox.add_child(name_lbl)
 
-	var desc := _label(w.desc, 22, Styles.MUTED)
-	desc.custom_minimum_size = Vector2(0, 70)
+	## Descrição curta de 1 linha (até ~26 letras), altura fixa.
+	var desc := _label(w.desc.replace("\n", " "), 15, Styles.MUTED)
+	desc.custom_minimum_size = Vector2(0, 24)
+	desc.clip_text = true
 	vbox.add_child(desc)
 
+	var spacer := Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_child(spacer)
+
 	var btn := Button.new()
-	btn.custom_minimum_size = Vector2(0, 64)
-	btn.add_theme_font_size_override("font_size", 26)
+	btn.custom_minimum_size = Vector2(0, 48)
+	btn.add_theme_font_size_override("font_size", 19)
 	if equipped:
 		btn.text = "Equipada"
 		btn.disabled = true
@@ -103,19 +121,19 @@ func _build_card(w: Dictionary) -> Control:
 ## Sprite da arma; arma sem sprite ainda mostra um “?” provisório.
 func _build_icon(w: Dictionary) -> Control:
 	var box := CenterContainer.new()
-	box.custom_minimum_size = Vector2(0, 190)
+	box.custom_minimum_size = Vector2(0, 116)
 	if w.texture != "" and ResourceLoader.exists(w.texture):
 		var tex := TextureRect.new()
 		tex.texture = load(w.texture)
 		tex.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		tex.custom_minimum_size = Vector2(180, 180)
+		tex.custom_minimum_size = Vector2(110, 110)
 		if w.locked:
-			tex.modulate = Color(0, 0, 0, 0.6)
+			tex.modulate = Color(0.5, 0.52, 0.6, 0.85)   # visível, mas apagada
 		box.add_child(tex)
 	else:
-		var q := _label("?", 140, Styles.MUTED.darkened(0.35))
+		var q := _label("?", 90, Styles.MUTED.darkened(0.35))
 		box.add_child(q)
 	return box
 
@@ -125,7 +143,7 @@ func _build_bottom_buttons() -> void:
 	var play := Button.new()
 	play.text = "JOGAR"
 	play.size = Vector2(380, 100)
-	play.position = Vector2(960 + 20, 880)
+	play.position = Vector2(960 + 20, 950)
 	play.add_theme_font_size_override("font_size", 44)
 	Styles.gold_button(play, Styles.YELLOW, Styles.YELLOW.lightened(0.25))
 	play.pressed.connect(_play)
@@ -134,7 +152,7 @@ func _build_bottom_buttons() -> void:
 	var back := Button.new()
 	back.text = "Voltar"
 	back.size = Vector2(260, 100)
-	back.position = Vector2(960 - 20 - 260, 880)
+	back.position = Vector2(960 - 20 - 260, 950)
 	back.add_theme_font_size_override("font_size", 36)
 	Styles.gold_button(back, Styles.MUTED, Styles.CREAM)
 	back.pressed.connect(_back)

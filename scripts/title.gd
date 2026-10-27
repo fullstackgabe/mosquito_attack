@@ -17,8 +17,10 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
+	var frame := Mosquito.FLY_FRAMES[int(_t * Mosquito.FLY_FPS) % Mosquito.FLY_FRAMES.size()]
 	for i in _flyers.size():
 		var s := _flyers[i]
+		s.texture = frame
 		s.position.x += (60.0 + i * 25.0) * delta * (1.0 if i % 2 == 0 else -1.0)
 		s.position.y += sin(_t * (2.0 + i * 0.3) + i) * 40.0 * delta
 		s.flip_h = i % 2 == 0

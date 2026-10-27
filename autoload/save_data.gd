@@ -53,5 +53,6 @@ func _load() -> void:
 	equipped = cfg.get_value("progress", "equipped", Weapons.DEFAULT_ID)
 	if not owned.has(Weapons.DEFAULT_ID):
 		owned.append(Weapons.DEFAULT_ID)
-	if not owned.has(equipped):
+	## arma removida do jogo (ex.: Havaiana de Pau, 26/10/2026) volta para a padrão
+	if not owned.has(equipped) or Weapons.get_def(equipped).id != equipped:
 		equipped = Weapons.DEFAULT_ID

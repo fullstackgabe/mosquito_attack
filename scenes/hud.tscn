@@ -19,26 +19,12 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 8
 
-[node name="CoinsLabel" type="Label" parent="."]
-offset_left = 1460.0
-offset_top = 30.0
-offset_right = 1890.0
-offset_bottom = 90.0
-mouse_filter = 2
-horizontal_alignment = 2
-vertical_alignment = 1
-text = "Moedas: 0"
-theme_override_font_sizes/font_size = 40
-theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 8
-
 [node name="HintLabel" type="Label" parent="."]
 offset_left = 30.0
 offset_top = 1020.0
 offset_right = 600.0
 offset_bottom = 1060.0
 mouse_filter = 2
-text = "Esc: voltar ao menu"
+text = "Esc para voltar"
 theme_override_font_sizes/font_size = 24
 theme_override_colors/font_color = Color(0, 0, 0, 0.45)
